@@ -12,6 +12,8 @@
 #include "../include/model.h"
 #include "../include/ils.h"
 
+#define ARGS_NUM 6
+
 using namespace std;
 
 template<typename T>
@@ -33,6 +35,9 @@ void drawing(ofstream&, double**, solution&);
 
 ILOSTLBEGIN
 int main(int argc, char* args[]){
+	if(argc - 1 != ARGS_NUM)
+		exit(EXIT_FAILURE);
+
 	// Reading input file
 	int p = string_to<int>(args[1]);
 	int r = string_to<int>(args[2]);
@@ -75,19 +80,22 @@ int main(int argc, char* args[]){
 	// unsigned max_lb_it = 0;
 
 	// Initializing cplex environment
-	IloEnv env;
+	// IloEnv env;
 
-	try{
+	// try{
 		FWChrono timer;
 		timer.start();
 		ils ILS(instance, max_it, p, r, timer);
 		solution result = ILS.run_w_lb();
 		timer.stop();
-	}catch(IloException& e){
-		cerr << "Concert Exception" << e << endl;
-	}
+
+		printf("TOTAL EXECUTION TIME: %.2lf\n", timer.getStopTime());
+		result.show_data();
+	// }catch(IloException& e){
+		// cerr << "Concert Exception" << e << endl;
+	// }
 	// Closing the environment
-	env.end();
+	// env.end();
 
 	return 0;
 }

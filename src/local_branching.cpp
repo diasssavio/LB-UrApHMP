@@ -62,21 +62,21 @@ bool local_branching::run(double ntl, unsigned k_max, unsigned k_min) {
  * @return true if found a feasible solution, false otherwise
  */
 // bool run(double ntl, double UB, unsigned k_max = 1, unsigned k_min = 0, bool first = false) {
-bool local_branching::run(double ntl, double UB, unsigned k_max, unsigned k_min, bool first) {
+bool local_branching::run(double ntl, double UB, int k_max, int k_min, bool first) {
 	int n = sol.get_instance().get_n();
 	set< unsigned > alloc_hubs = sol.get_alloc_hubs();
 
 	// Add LBC based on reference solution
 	IloExpr expr1(env);
-	IloExpr expr2(env);
+	// IloExpr expr2(env);
 	for(IloInt k = 0; k < n; k++)
 		if(sol.is_hub(k))
 			expr1 += (1 - mod.z[k][k]);
-		else
-			expr2 += mod.z[k][k];
+		// else
+			// expr2 += mod.z[k][k];
 
-	IloNum _k_max = k_max;
-	IloConstraint lbc_max = (expr1 + expr2 <= _k_max);
+	// IloConstraint lbc_max = (expr1 + expr2 <= k_max);
+	IloConstraint lbc_max = (expr1 <= k_max);
 	stringstream lbc_name;
 	lbc_name << "LBC_max";
 	lbc_max.setName(lbc_name.str().c_str());
@@ -85,7 +85,8 @@ bool local_branching::run(double ntl, double UB, unsigned k_max, unsigned k_min,
 	IloConstraint lbc_min;
 	if(k_min != 0) {
 		IloNum _k_min = k_min;
-		lbc_min = (expr1 + expr2 >= _k_min);
+		// lbc_min = (expr1 + expr2 >= _k_min);
+		lbc_min = (expr1 >= _k_min);
 		stringstream lbc_name;
 		lbc_name << "LBC_min";
 		lbc_min.setName(lbc_name.str().c_str());
@@ -100,17 +101,17 @@ bool local_branching::run(double ntl, double UB, unsigned k_max, unsigned k_min,
 	cplex.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
 	cplex.setParam(IloCplex::PreInd, IloFalse);
 	cplex.setParam(IloCplex::Param::TimeLimit, ntl);
+	cplex.setParam(IloCplex::Param::MIP::Tolerances::UpperCutoff, UB);
+	// cplex.setParam(IloCplex::Param::MIP::Limits::Solutions, 1);
+	// CPLEX_PARAM_MIPEMPHASIS to feasibility emphasis
+	cplex.setParam(IloCplex::Param::Emphasis::MIP, 1);
 
-	cplex.exportModel("test.lp");
+	// cplex.exportModel("test.lp");
 
 	cplex.solve();
 
-	// Remove LBC
-	mod.remove(lbc_max);
-	if(k_min != 0)
-		mod.remove(lbc_min);
-
 	// Return the resulting solution
+	bool to_ret = false;
 	if(cplex.getStatus() == IloAlgorithm::Status::Optimal || cplex.getStatus() == IloAlgorithm::Status::Feasible){
 		for(IloInt i = 0; i < n; i++){
 			IloNumArray aux1(env);
@@ -132,8 +133,17 @@ bool local_branching::run(double ntl, double UB, unsigned k_max, unsigned k_min,
 
 		result = solution(sol.get_instance(), sol.get_p(), sol.get_r(), _z, _f, cplex.getObjValue());
 
-		return true;
+		to_ret = true;
 	}
-	if(cplex.getStatus() == IloAlgorithm::Status::InfeasibleOrUnbounded || cplex.getStatus() == IloAlgorithm::Status::Unknown)
-		return false;
+	if(cplex.getStatus() == IloAlgorithm::Status::InfeasibleOrUnbounded || cplex.getStatus() == IloAlgorithm::Status::Unknown){
+		result = sol;
+		to_ret = false;
+	}
+
+	// Remove LBC
+	mod.remove(lbc_max);
+	if(k_min != 0)
+		mod.remove(lbc_min);
+
+	return to_ret;
 }

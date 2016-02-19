@@ -529,25 +529,47 @@ solution& ils::execute(){
 	return best;
 }
 
-solution& ils::run_w_lb(){
+solution ils::run_w_lb(){
 	// TODO Try initial reference sol with ILS & constructor heuristic
 	solution initial = constructor();
 	solution improved = initial;
 
 	// TODO Call local branching loop
-	unsigned k_min = 0;
-	unsigned k_max = 1;
-	double ntl = 0.0;
+	int k_min = 0;
+	int k_max = 1;
+	double ntl = 120;
 
+	// Initializing CPLEX Environment
 	IloEnv env;
-	model mod(env, instance, initial);
-	bool stopping_criterion = false;
-	bool first = true;
-	while(!stopping_criterion) {
+	
+	try {
+		model mod(env, instance, initial);
 		local_branching lb(env, improved, mod);
-		bool feasible = lb.run(ntl, improved.get_total_cost(), k_max, k_min);
-		if(feasible) {
 
+		bool stopping_criterion = false;
+		bool first = true;
+		while(!stopping_criterion) {
+			if(first){
+				best = improved;
+				first = false;
+			}
+
+			best.show_data();
+
+			if(lb.run(ntl, improved.get_total_cost(), k_max, k_min)){
+				improved = lb.get_result();
+				if(best.get_total_cost() > improved.get_total_cost())
+					best = improved;
+				else // Shaking phase
+					stopping_criterion = true;
+			} else
+				stopping_criterion = true;
 		}
+	} catch(IloException& e) {
+		cerr << "Concert Exception:\n" << e << endl;
 	}
+	// Closing the CPLEX Environment
+	env.end();
+
+	return best;
 }

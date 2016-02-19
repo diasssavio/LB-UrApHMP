@@ -15,6 +15,7 @@
 #include <ctime>
 #include <limits>
 #include <iostream>
+
 #include "../include/FWChrono.h"
 #include "../include/mt19937ar.h"
 #include "../include/solution.h"
@@ -103,7 +104,7 @@ public:
 	 * @details [long description]
 	 * @return Best found solution
 	 */
-	solution& run_w_lb();
+	solution run_w_lb();
 };
 
 #endif /* ILS_H_ */

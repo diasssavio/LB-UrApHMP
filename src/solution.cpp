@@ -168,7 +168,7 @@ void solution::generate_hubs_cost(){
 }
 
 void solution::show_data(){
-	printf("\np: %d\tr: %d\n", this->p, this->r);
+	// printf("\np: %d\tr: %d\n", this->p, this->r);
 	printf("Allocated Hubs: ");
 	for(set< unsigned >::iterator h = alloc_hubs.begin(); h != alloc_hubs.end(); h++)
 		printf("%d\t", (*h + 1));
@@ -214,11 +214,11 @@ void solution::show_data(){
 		printf("\n");
 	}*/
 
-	printf("\n\nHUBS COST:\t");
+	/*printf("\n\nHUBS COST:\t");
 	for(int i = 0; i < p; i++)
-		printf("%.2lf\t", hubs_cost[i]);
+		printf("%.2lf\t", hubs_cost[i]);*/
 
-	printf("\n\nTOTAL COST: %.2lf\n\n", get_total_cost());
+	printf("\nTOTAL COST: %.2lf\n", get_total_cost());
 }
 
 bool solution::is_hub( unsigned index ){ return (alloc_hubs.find(index) != alloc_hubs.end()); }
