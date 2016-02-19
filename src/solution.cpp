@@ -29,9 +29,11 @@ solution::solution( uraphmp& instance, int p_cons, int r_cons ) : p(p_cons), r(r
 	this->set_instance(instance);
 }
 
-solution::solution( uraphmp& instance, int p_cons, int r_cons, IloNumArray2& _z, IloNumArray4& _f, double cost ){
-	this->solution(instance, p_cons, r_cons);
+solution::solution( uraphmp& instance, int p_cons, int r_cons, IloNumArray2& _z, IloNumArray4& _f, double cost ) : p(p_cons), r(r_cons) {
+	this->set_instance(instance);
 	
+	int n = this->instance.get_n();
+
 	set< unsigned > _alloc_hubs;
 	vector< vector< unsigned > > _assigned_hubs;
 	vector< vector< unsigned > > _f_chosen;

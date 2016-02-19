@@ -34,7 +34,7 @@ public:
 	const solution& get_result() const;
 
 	bool run(double, unsigned = 1, unsigned = 0);
-	bool run(double, double, bool = false, unsigned = 1, unsigned = 0);
+	bool run(double, double, unsigned = 1, unsigned = 0, bool = false);
 };
 
 #endif /* LOCAL_BRANCHING_H_ */

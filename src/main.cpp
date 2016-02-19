@@ -10,7 +10,7 @@
 #include "../include/UrApHMP.h"
 #include "../include/solution.h"
 #include "../include/model.h"
-#include "../include/local_branching.h"
+#include "../include/ils.h"
 
 using namespace std;
 
@@ -73,10 +73,6 @@ int main(int argc, char* args[]){
 
 	unsigned max_it = 0.1 * n;
 	// unsigned max_lb_it = 0;
-	unsigned k_min = 0;
-	unsigned k_max = 1;
-	double ttl = 0.0;
-	double ntl = 0.0;
 
 	// Initializing cplex environment
 	IloEnv env;
@@ -87,45 +83,6 @@ int main(int argc, char* args[]){
 		ils ILS(instance, max_it, p, r, timer);
 		solution result = ILS.run_w_lb();
 		timer.stop();
-
-		// ------------------------------------------
-
-		// Getting the allocation optima from cplex solver
-		double **z = (double**) malloc(sizeof(double*) * n);
-		for(unsigned i = 0; i < n; i++){
-			z[i] = (double*) malloc(sizeof(double) * n);
-			for(unsigned j = 0; j < n; j++)
-				z[i][j] = cplex.getValue(mod.z[i][j]);
-		}
-
-		// Drawing the allocation graph
-		ofstream dot_file("out.dot");
-		drawing(dot_file, z, sol);
-
-		// Printing solution
-		vector<IloNum> result;
-		for(int i = 0; i < n; i++)
-			result.push_back(cplex.getValue(mod.z[i][i]));
-		cout << "Max Objective value = " << fixed << cplex.getObjValue() << endl << "Hubs: ";
-		for(int i = 0; i < n; i++)
-			if(result[i] != 0.0)
-				cout << i + 1 << " ";
-		cout << endl;
-		printf("Tempo de execução: %.2lf\n", timer.getStopTime());
-
-		// Calculating the number of used edges
-		int count = 0;
-		for(int i = 0; i < n; i++)
-			for(int j = 0; j < n; j++)
-				if((cplex.getValue(mod.z[i][j]) != 0.0) && (i != j))
-					count++;
-		printf("Number of used edges: %d\n", count + (p * (p-1) / 2));
-		// for(int i = 0; i < n; i++){
-		// 	for(int j = 0; j < n; j++)
-		// 		printf("%.2lf  ", cplex.getValue(mod.z[i][j]));
-		// 		// cout << cplex.getValue(mod.z[i][j]) << endl;
-		// 	cout << endl;
-		// }
 	}catch(IloException& e){
 		cerr << "Concert Exception" << e << endl;
 	}

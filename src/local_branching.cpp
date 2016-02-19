@@ -45,7 +45,8 @@ const solution& local_branching::get_result() const { return this->result; }
  * @param k_min Minimum rhs of LBC expressions
  * @return true if found a feasible solution, false otherwise
  */
-bool local_branching::run(double ntl, unsigned k_max = 1, unsigned k_min = 0) {
+// bool local_branching::run(double ntl, unsigned k_max = 1, unsigned k_min = 0) {
+bool local_branching::run(double ntl, unsigned k_max, unsigned k_min) {
 	
 }
 
@@ -55,12 +56,13 @@ bool local_branching::run(double ntl, unsigned k_max = 1, unsigned k_min = 0) {
  * 
  * @param ntl Node (subproblem solution) time limit
  * @param UB Upper Bound for solution comparison
- * @param first Stop at first better than UB solution or not
  * @param k_max Maximum rhs of LBC expressions
  * @param k_min Minimum rhs of LBC expressions
+ * @param first Stop at first better than UB solution or not
  * @return true if found a feasible solution, false otherwise
  */
-bool run(double ntl, double UB, bool first = false, unsigned k_max = 1, unsigned k_min = 0) {
+// bool run(double ntl, double UB, unsigned k_max = 1, unsigned k_min = 0, bool first = false) {
+bool local_branching::run(double ntl, double UB, unsigned k_max, unsigned k_min, bool first) {
 	int n = sol.get_instance().get_n();
 	set< unsigned > alloc_hubs = sol.get_alloc_hubs();
 
@@ -73,7 +75,8 @@ bool run(double ntl, double UB, bool first = false, unsigned k_max = 1, unsigned
 		else
 			expr2 += mod.z[k][k];
 
-	IloConstraint lbc_max = (expr1 + expr2 <= k_max);
+	IloNum _k_max = k_max;
+	IloConstraint lbc_max = (expr1 + expr2 <= _k_max);
 	stringstream lbc_name;
 	lbc_name << "LBC_max";
 	lbc_max.setName(lbc_name.str().c_str());
@@ -81,7 +84,8 @@ bool run(double ntl, double UB, bool first = false, unsigned k_max = 1, unsigned
 
 	IloConstraint lbc_min;
 	if(k_min != 0) {
-		lbc_min = (expr1 + expr2 >= k_min);
+		IloNum _k_min = k_min;
+		lbc_min = (expr1 + expr2 >= _k_min);
 		stringstream lbc_name;
 		lbc_name << "LBC_min";
 		lbc_min.setName(lbc_name.str().c_str());
@@ -107,7 +111,7 @@ bool run(double ntl, double UB, bool first = false, unsigned k_max = 1, unsigned
 		mod.remove(lbc_min);
 
 	// Return the resulting solution
-	if(cplex.getStatus() == IloCplex::Status::Optimal || cplex.getStatus() == IloCplex::Status::Feasible){
+	if(cplex.getStatus() == IloAlgorithm::Status::Optimal || cplex.getStatus() == IloAlgorithm::Status::Feasible){
 		for(IloInt i = 0; i < n; i++){
 			IloNumArray aux1(env);
 			IloNumArray3 aux2(env);
@@ -130,6 +134,6 @@ bool run(double ntl, double UB, bool first = false, unsigned k_max = 1, unsigned
 
 		return true;
 	}
-	if(cplex.getStatus() == IloCplex::Status::InfeasibleOrUnbounded || cplex.getStatus() == IloCplex::Status::Unknown)
+	if(cplex.getStatus() == IloAlgorithm::Status::InfeasibleOrUnbounded || cplex.getStatus() == IloAlgorithm::Status::Unknown)
 		return false;
 }

@@ -535,13 +535,17 @@ solution& ils::run_w_lb(){
 	solution improved = initial;
 
 	// TODO Call local branching loop
+	unsigned k_min = 0;
+	unsigned k_max = 1;
+	double ntl = 0.0;
+
 	IloEnv env;
 	model mod(env, instance, initial);
 	bool stopping_criterion = false;
 	bool first = true;
 	while(!stopping_criterion) {
 		local_branching lb(env, improved, mod);
-		bool feasible = lb.run(k_min, k_max, ttl, ntl);
+		bool feasible = lb.run(ntl, improved.get_total_cost(), k_max, k_min);
 		if(feasible) {
 
 		}
