@@ -545,8 +545,9 @@ solution ils::run_w_lb(){
 	// int k_cur_min = k_min;
 	
 	try {
-		model mod(env, instance, initial);
-		local_branching lb(env, improved, mod);
+		// model mod(env, instance, initial);
+		model2 mod(env, instance, initial);
+		local_branching lb(env, improved, &mod);
 
 		bool stopping_criterion = false;
 		bool first = true;
@@ -558,7 +559,8 @@ solution ils::run_w_lb(){
 
 			best.show_data();
 
-			if(lb.run(ntl, improved.get_total_cost(), k_max, k_min)){
+			// if(lb.run(ntl, improved.get_total_cost(), k_max, k_min)){
+			if(lb.run2(ntl, improved.get_total_cost(), k_max, k_min)){
 				improved = lb.get_result();
 				if(best.get_total_cost() > improved.get_total_cost()){
 					best = improved;

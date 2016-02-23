@@ -56,16 +56,13 @@ solution::solution( uraphmp& instance, int p_cons, int r_cons, IloNumArray2& _z,
 	for(unsigned i = 0; i < n; i++){
 		vector< unsigned > aux1;
 		vector< unsigned > aux2;
-		for(unsigned j = 0; j < n; j++){
-			for(unsigned k = 0; k < n; k++){
-				for(unsigned l = 0; l < n; l++){
+		for(unsigned j = 0; j < n; j++)
+			for(unsigned k = 0; k < n; k++)
+				for(unsigned l = 0; l < n; l++)
 					if(_f[i][j][k][l] != 0.0){
 						aux1.push_back(k);
 						aux2.push_back(l);
 					}
-				}
-			}
-		}
 		_f_chosen.push_back(aux1);
 		_s_chosen.push_back(aux2);
 	}
@@ -76,6 +73,52 @@ solution::solution( uraphmp& instance, int p_cons, int r_cons, IloNumArray2& _z,
 	set_f_chosen(_f_chosen);
 	set_s_chosen(_s_chosen);
 	this->_cost = cost;
+}
+
+solution::solution( uraphmp& instance, int p_cons, int r_cons, IloNumArray2& _z, IloNumArray2& _w, IloNumArray3& _x, IloNumArray3& _y, double cost ) : p(p_cons), r(r_cons), _cost(cost) {
+	this->set_instance(instance);
+	
+	int n = this->instance.get_n();
+
+	set< unsigned > _alloc_hubs;
+	vector< vector< unsigned > > _assigned_hubs;
+	vector< vector< unsigned > > _f_chosen;
+	vector< vector< unsigned > > _s_chosen;
+
+	// Translating _z to alloc_hubs and assigned_hubs
+	for(unsigned i = 0; i < n; i++){
+		vector< unsigned > aux;
+		for(unsigned j = 0; j < n; j++){
+			if(_z[i][j] == 0.0) continue;
+			if((i == j))
+				_alloc_hubs.insert(i);
+			else
+				aux.push_back(j);
+		}
+		_assigned_hubs.push_back(aux);
+	}
+
+	// Translating _x _y to _f_chosen and _s_chosen
+	for(unsigned i = 0; i < n; i++){
+		vector< unsigned > aux1;
+		vector< unsigned > aux2;
+		for(unsigned j = 0; j < n; j++)
+			for(unsigned k = 0; k < n; k++)
+				if(_w[i][k] != 0.0)
+					for(unsigned l = 0; l < n; l++)
+						if((_y[i][k][l] != 0.0) && (_x[i][l][j] != 0.0)){
+							aux1.push_back(k);
+							aux2.push_back(l);
+						}
+		_f_chosen.push_back(aux1);
+		_s_chosen.push_back(aux2);
+	}
+
+	// Setting the instance variables
+	set_alloc_hubs(_alloc_hubs);
+	set_assigned_hubs(_assigned_hubs);
+	set_f_chosen(_f_chosen);
+	set_s_chosen(_s_chosen);
 }
 
 solution::~solution() { }

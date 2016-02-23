@@ -4,6 +4,7 @@
 #include <ilcplex/ilocplex.h>
 
 #include "../include/model.h"
+#include "../include/model2.h"
 #include "../include/solver.h"
 #include "../include/typedef.hpp"
 
@@ -17,15 +18,21 @@ private:
 	// Input Data
 	IloEnv& env; // CPLEX Environment
 	solution& sol; // Reference solution for LBC
-	model& mod; // Problem model
+	model* mod; // Problem model
+	model2* mod2; // Problem model 2
 
 	// LBC Solution
 	IloNumArray2 _z;
 	IloNumArray4 _f;
+	IloNumArray2 _w;
+	IloNumArray3 _x;
+	IloNumArray3 _y;
 	solution result;
 
 public:
-	local_branching( IloEnv&, solution&, model& );
+	local_branching( IloEnv&, solution&, model* );
+
+	local_branching( IloEnv&, solution&, model2* );
 
 	~local_branching();
 
@@ -35,6 +42,7 @@ public:
 
 	bool run( double, unsigned = 1, unsigned = 0 );
 	bool run( double, double, int = 1, int = 0, bool = false );
+	bool run2( double, double, int = 1, int = 0, bool = false );
 };
 
 #endif /* LOCAL_BRANCHING_H_ */

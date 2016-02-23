@@ -100,14 +100,14 @@ int main(int argc, char* args[]){
 	// Closing the environment
 	env.end();
 
-	/* FWChrono timer;
+	FWChrono timer;
 	timer.start();
 	ils ILS(instance, max_it, p, r, timer);
 	solution result = ILS.run_w_lb();
 	timer.stop();
 
 	printf("TOTAL EXECUTION TIME: %.2lf\n", timer.getStopTime());
-	result.show_data(); */
+	result.show_data();
 
 	return 0;
 }

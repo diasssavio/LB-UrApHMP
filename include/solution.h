@@ -47,6 +47,7 @@ public:
 	solution();
 	solution( uraphmp&, int, int );
 	solution( uraphmp&, int, int, IloNumArray2&, IloNumArray4&, double );
+	solution( uraphmp&, int, int, IloNumArray2&, IloNumArray2&, IloNumArray3&, IloNumArray3&, double );
 //	solution( solution );
 	virtual ~solution();
 
