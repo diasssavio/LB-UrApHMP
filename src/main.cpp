@@ -10,6 +10,7 @@
 #include "../include/UrApHMP.h"
 #include "../include/solution.h"
 #include "../include/model.h"
+#include "../include/model2.h"
 #include "../include/ils.h"
 
 #define ARGS_NUM 6
@@ -80,22 +81,33 @@ int main(int argc, char* args[]){
 	// unsigned max_lb_it = 0;
 
 	// Initializing cplex environment
-	// IloEnv env;
+	IloEnv env;
+	solution initial(instance, p, r);
 
-	// try{
-		FWChrono timer;
-		timer.start();
-		ils ILS(instance, max_it, p, r, timer);
-		solution result = ILS.run_w_lb();
-		timer.stop();
+	try{
+		model2 mod(env, instance, initial);
+		IloCplex cplex(mod);
+		cplex.exportModel("test.lp");
+		cplex.setParam(IloCplex::Threads, 1);
+		cplex.setParam(IloCplex::Param::Preprocessing::Aggregator, 0);
+		cplex.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+		cplex.setParam(IloCplex::PreInd, IloFalse);
+		cplex.solve();
+	}catch(IloException& e){
+		cerr << "Concert Exception" << e << endl;
+	}
 
-		printf("TOTAL EXECUTION TIME: %.2lf\n", timer.getStopTime());
-		result.show_data();
-	// }catch(IloException& e){
-		// cerr << "Concert Exception" << e << endl;
-	// }
 	// Closing the environment
-	// env.end();
+	env.end();
+
+	/* FWChrono timer;
+	timer.start();
+	ils ILS(instance, max_it, p, r, timer);
+	solution result = ILS.run_w_lb();
+	timer.stop();
+
+	printf("TOTAL EXECUTION TIME: %.2lf\n", timer.getStopTime());
+	result.show_data(); */
 
 	return 0;
 }

@@ -84,9 +84,8 @@ bool local_branching::run(double ntl, double UB, int k_max, int k_min, bool firs
 
 	IloConstraint lbc_min;
 	if(k_min != 0) {
-		IloNum _k_min = k_min;
 		// lbc_min = (expr1 + expr2 >= _k_min);
-		lbc_min = (expr1 >= _k_min);
+		lbc_min = (expr1 >= k_min);
 		stringstream lbc_name;
 		lbc_name << "LBC_min";
 		lbc_min.setName(lbc_name.str().c_str());

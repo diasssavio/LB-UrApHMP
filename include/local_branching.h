@@ -25,7 +25,7 @@ private:
 	solution result;
 
 public:
-	local_branching(IloEnv&, solution&, model&);
+	local_branching( IloEnv&, solution&, model& );
 
 	~local_branching();
 
@@ -33,8 +33,8 @@ public:
 	const IloNumArray4& get_f() const;
 	const solution& get_result() const;
 
-	bool run(double, unsigned = 1, unsigned = 0);
-	bool run(double, double, int = 1, int = 0, bool = false);
+	bool run( double, unsigned = 1, unsigned = 0 );
+	bool run( double, double, int = 1, int = 0, bool = false );
 };
 
 #endif /* LOCAL_BRANCHING_H_ */

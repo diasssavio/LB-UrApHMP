@@ -534,13 +534,15 @@ solution ils::run_w_lb(){
 	solution initial = constructor();
 	solution improved = initial;
 
-	// TODO Call local branching loop
+	// Call local branching loop
 	int k_min = 0;
-	int k_max = 1;
+	int k_max = 2;
 	double ntl = 120;
 
 	// Initializing CPLEX Environment
 	IloEnv env;
+	// int k_cur_max = k_min + 1;
+	// int k_cur_min = k_min;
 	
 	try {
 		model mod(env, instance, initial);
@@ -558,9 +560,14 @@ solution ils::run_w_lb(){
 
 			if(lb.run(ntl, improved.get_total_cost(), k_max, k_min)){
 				improved = lb.get_result();
-				if(best.get_total_cost() > improved.get_total_cost())
+				if(best.get_total_cost() > improved.get_total_cost()){
 					best = improved;
-				else // Shaking phase
+					// k_cur_max = k_min + 1;
+					// k_cur_min = k_min;
+				// } else if(k_cur_max + 1 <= k_max) {
+					// k_cur_max++;
+					// k_cur_min = k_cur_max;
+				} else // Shaking phase
 					stopping_criterion = true;
 			} else
 				stopping_criterion = true;
