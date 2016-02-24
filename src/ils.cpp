@@ -279,7 +279,7 @@ solution& ils::r_neighborhood1( solution& p_sol ){
 			it = hubs.begin();
 			h = genrand_int32() % p; // hub to be exchanged
 			advance(it, h);
-			if(*it != recent_hub) can_change = true;				
+			if(*it != recent_hub) can_change = true;
 		}
 
 		hubs.erase(it);
@@ -530,7 +530,7 @@ solution& ils::execute(){
 }
 
 solution ils::run_w_lb(){
-	// TODO Try initial reference sol with ILS & constructor heuristic
+	// TODO Try initial reference sol with ILS, constructor heuristic & CPLEX first feasible
 	solution initial = constructor();
 	solution improved = initial;
 
@@ -543,7 +543,7 @@ solution ils::run_w_lb(){
 	IloEnv env;
 	// int k_cur_max = k_min + 1;
 	// int k_cur_min = k_min;
-	
+
 	try {
 		// model mod(env, instance, initial);
 		model2 mod(env, instance, initial);

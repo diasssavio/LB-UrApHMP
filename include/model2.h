@@ -21,13 +21,13 @@ private:
 	void add_const(); // Add constraints to model
 	void add_obj(); // Add objective function to model
 
-	// Instance & Solution
-	uraphmp& instance;
-	solution& sol;
-
 public:
 	model2(IloEnv, uraphmp&, solution&);
 	virtual ~model2();
+
+	// Instance & Solution
+	uraphmp& instance;
+	solution& sol;
 
 	// Variables
 	// traffic proportion
