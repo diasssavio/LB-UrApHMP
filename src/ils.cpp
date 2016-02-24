@@ -559,8 +559,7 @@ solution ils::run_w_lb(){
 
 			best.show_data();
 
-			// if(lb.run(ntl, improved.get_total_cost(), k_max, k_min)){
-			if(lb.run2(ntl, improved.get_total_cost(), k_max, k_min)){
+			if(lb.run(ntl, improved.get_total_cost(), k_max, k_min, true)){
 				improved = lb.get_result();
 				if(best.get_total_cost() > improved.get_total_cost()){
 					best = improved;

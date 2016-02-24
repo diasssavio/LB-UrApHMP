@@ -101,8 +101,6 @@ void model2::add_const(){
 	c4.setName(c4_name.str().c_str());
 	add(c4);
 
-	cout << "Constraints 1 OK!" << endl;
-
 	// Flow constraints
 	// Constraints (5): Traffics from i must travel
 	for(IloInt i = 0; i < n; i++){
@@ -120,8 +118,6 @@ void model2::add_const(){
 		c5.setName(c5_name.str().c_str());
 		add(c5);
 	}
-
-	cout << "Constraints 2 OK!" << endl;
 
 	// Constraints (6): 
 	for(IloInt i = 0; i < n; i++)
@@ -144,8 +140,6 @@ void model2::add_const(){
 			add(c6);
 		}
 
-	cout << "Constraints 3 OK!" << endl;
-
 	// Constraints (7):
 	for(IloInt i = 0; i < n; i++)
 		for(IloInt j = 0; j < n; j++){
@@ -158,8 +152,6 @@ void model2::add_const(){
 			c7.setName(c7_name.str().c_str());
 			add(c7);
 		}
-
-	cout << "Constraints 4 OK!" << endl;
 
 	// Constraints (8):
 	for(IloInt i = 0; i < n; i++)
@@ -174,8 +166,6 @@ void model2::add_const(){
 			add(c8);
 		}
 
-	cout << "Constraints 5 OK!" << endl;
-
 	// Constraints (9):
 	for(IloInt i = 0; i < n; i++)
 		for(IloInt j = 0; j < n; j++)
@@ -186,8 +176,6 @@ void model2::add_const(){
 				c9.setName(c9_name.str().c_str());
 				add(c9);
 			}
-
-	cout << "Constraints 6 OK!" << endl;
 
 	// Defining values of z[k][k]
 	/*for(IloInt k = 0; k < n; k++){

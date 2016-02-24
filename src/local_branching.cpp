@@ -63,8 +63,9 @@ const solution& local_branching::get_result() const { return this->result; }
  * @return true if found a feasible solution, false otherwise
  */
 // bool local_branching::run(double ntl, unsigned k_max = 1, unsigned k_min = 0) {
-bool local_branching::run(double ntl, unsigned k_max, unsigned k_min) {
-	
+bool local_branching::run(double ntl, double UB, int k_max, int k_min, bool first) {
+	if(mod != NULL) return run1(ntl, UB, k_max, k_min, first);
+	return run2(ntl, UB, k_max, k_min, first);
 }
 
 /**
@@ -79,7 +80,7 @@ bool local_branching::run(double ntl, unsigned k_max, unsigned k_min) {
  * @return true if found a feasible solution, false otherwise
  */
 // bool run(double ntl, double UB, unsigned k_max = 1, unsigned k_min = 0, bool first = false) {
-bool local_branching::run(double ntl, double UB, int k_max, int k_min, bool first) {
+bool local_branching::run1(double ntl, double UB, int k_max, int k_min, bool first) {
 	int n = sol.get_instance().get_n();
 	set< unsigned > alloc_hubs = sol.get_alloc_hubs();
 
@@ -214,7 +215,7 @@ bool local_branching::run2(double ntl, double UB, int k_max, int k_min, bool fir
 	cplex.setParam(IloCplex::PreInd, IloFalse);
 	cplex.setParam(IloCplex::Param::TimeLimit, ntl);
 	cplex.setParam(IloCplex::Param::MIP::Tolerances::UpperCutoff, UB);
-	// cplex.setParam(IloCplex::Param::MIP::Limits::Solutions, 1);
+	cplex.setParam(IloCplex::Param::MIP::Limits::Solutions, first ? 1 : 9223372036800000000);
 	// CPLEX_PARAM_MIPEMPHASIS to feasibility emphasis
 	cplex.setParam(IloCplex::Param::Emphasis::MIP, 1);
 
@@ -232,7 +233,7 @@ bool local_branching::run2(double ntl, double UB, int k_max, int k_min, bool fir
 			IloNumArray2 aux4(env);
 			for(IloInt j = 0; j < n; j++){
 				aux1.add(cplex.getValue(mod2->z[i][j]));
-				aux1.add(cplex.getValue(mod2->w[i][j]));
+				aux2.add(cplex.getValue(mod2->w[i][j]));
 				IloNumArray aux5(env);
 				IloNumArray aux6(env);
 				for(IloInt k = 0; k < n; k++){
@@ -249,7 +250,7 @@ bool local_branching::run2(double ntl, double UB, int k_max, int k_min, bool fir
 		}
 
 		result = solution(sol.get_instance(), sol.get_p(), sol.get_r(), _z, _w, _x, _y, cplex.getObjValue());
-
+		
 		to_ret = true;
 	}
 	if(cplex.getStatus() == IloAlgorithm::Status::InfeasibleOrUnbounded || cplex.getStatus() == IloAlgorithm::Status::Unknown){

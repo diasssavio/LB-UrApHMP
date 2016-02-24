@@ -29,6 +29,9 @@ private:
 	IloNumArray3 _y;
 	solution result;
 
+	bool run1( double, double, int = 1, int = 0, bool = false );
+	bool run2( double, double, int = 1, int = 0, bool = false );
+
 public:
 	local_branching( IloEnv&, solution&, model* );
 
@@ -40,9 +43,7 @@ public:
 	const IloNumArray4& get_f() const;
 	const solution& get_result() const;
 
-	bool run( double, unsigned = 1, unsigned = 0 );
 	bool run( double, double, int = 1, int = 0, bool = false );
-	bool run2( double, double, int = 1, int = 0, bool = false );
 };
 
 #endif /* LOCAL_BRANCHING_H_ */

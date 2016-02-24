@@ -81,7 +81,7 @@ int main(int argc, char* args[]){
 	// unsigned max_lb_it = 0;
 
 	// Initializing cplex environment
-	IloEnv env;
+	/*IloEnv env;
 	solution initial(instance, p, r);
 
 	try{
@@ -98,7 +98,7 @@ int main(int argc, char* args[]){
 	}
 
 	// Closing the environment
-	env.end();
+	env.end();*/
 
 	FWChrono timer;
 	timer.start();

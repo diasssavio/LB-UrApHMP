@@ -104,12 +104,14 @@ solution::solution( uraphmp& instance, int p_cons, int r_cons, IloNumArray2& _z,
 		vector< unsigned > aux2;
 		for(unsigned j = 0; j < n; j++)
 			for(unsigned k = 0; k < n; k++)
-				if(_w[i][k] != 0.0)
-					for(unsigned l = 0; l < n; l++)
-						if((_y[i][k][l] != 0.0) && (_x[i][l][j] != 0.0)){
+				if(_w[i][k] > 0.0)
+					for(unsigned l = 0; l < n; l++){
+						if(l == k) continue;
+						if((_y[i][k][l] > 0.0) && (_x[i][l][j] > 0.0)){
 							aux1.push_back(k);
 							aux2.push_back(l);
 						}
+					}
 		_f_chosen.push_back(aux1);
 		_s_chosen.push_back(aux2);
 	}
