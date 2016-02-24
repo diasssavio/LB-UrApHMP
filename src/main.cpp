@@ -83,16 +83,17 @@ int main(int argc, char* args[]){
 	// Initializing cplex environment
 	/*IloEnv env;
 	solution initial(instance, p, r);
+	unsigned hubs[] = {0, 3, 6, 11, 17};
+	set< unsigned > a_hubs(hubs, hubs+5);
+	initial.set_alloc_hubs(a_hubs);
+	solution result;
 
 	try{
-		model2 mod(env, instance, initial);
-		IloCplex cplex(mod);
-		cplex.exportModel("test.lp");
-		cplex.setParam(IloCplex::Threads, 1);
-		cplex.setParam(IloCplex::Param::Preprocessing::Aggregator, 0);
-		cplex.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
-		cplex.setParam(IloCplex::PreInd, IloFalse);
-		cplex.solve();
+		model mod(env, instance, initial);
+		solver cplex(&mod);
+		cplex.run();
+		// result = solution(instance, p, r, cplex.get_z(), cplex.get_w(), cplex.get_x(), cplex.get_y(), cplex.get_obj_value());
+		result = solution(instance, p, r, cplex.get_z(), cplex.get_f(), cplex.get_obj_value());
 	}catch(IloException& e){
 		cerr << "Concert Exception" << e << endl;
 	}

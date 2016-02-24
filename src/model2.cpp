@@ -178,7 +178,7 @@ void model2::add_const(){
 			}
 
 	// Defining values of z[k][k] and w[i][k]
-	vector< bool > alloc_hubs = sol.get_bin_alloc_hubs();
+	/*vector< bool > alloc_hubs = sol.get_bin_alloc_hubs();
 	for(IloInt k = 0; k < n; k++){
 		IloConstraint c8;
 		if(alloc_hubs[k])
@@ -227,7 +227,7 @@ void model2::add_const(){
 					c10_name << "Cons_10(" << i << ")(" << k << ")(" << l << ")";
 					c10.setName(c10_name.str().c_str());
 					add(c10);
-				}
+				}*/
 }
 
 void model2::add_obj(){
