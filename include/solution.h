@@ -82,6 +82,7 @@ public:
 	vector< double >& get_hubs_cost();
 	double get_total_cost(); // Objective function value
 	double get_total_hubs_cost();
+	vector< bool > get_bin_alloc_hubs();
 
 	// Useful Methods
 	static bool my_comparison( pair< double, int >, pair< double, int > );

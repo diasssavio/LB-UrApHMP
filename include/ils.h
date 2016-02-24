@@ -22,6 +22,7 @@
 #include "../include/UrApHMP.h"
 #include "../include/local_branching.h"
 #include "../include/model2.h"
+ #include "../include/solver.h"
 
 class ils {
 private:

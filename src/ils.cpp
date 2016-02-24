@@ -530,25 +530,29 @@ solution& ils::execute(){
 }
 
 solution ils::run_w_lb(){
-	// TODO Try initial reference sol with ILS, constructor heuristic & CPLEX first feasible
-	solution initial = constructor();
-	solution improved = initial;
-
-	// Call local branching loop
+	// Execution parameters
 	int k_min = 0;
-	int k_max = 2;
+	int k_max = 1;
 	double ntl = 120;
 
 	// Initializing CPLEX Environment
 	IloEnv env;
-	// int k_cur_max = k_min + 1;
-	// int k_cur_min = k_min;
 
 	try {
+		// TODO Try initial reference sol with ILS, constructor heuristic & CPLEX first feasible
+		// NOTE CPLEX first feasible solution is too much time consuming
+		solution initial = execute();
+		solution improved = initial;
 		// model mod(env, instance, initial);
+		// solution initial(instance, p, r);
 		model2 mod(env, instance, initial);
+		// solver cplex(&mod);
+		// cplex.run(MAX_DOUBLE, MAX_DOUBLE, true);
+		// solution improved(instance, p, r, cplex.get_z(), cplex.get_w(), cplex.get_x(), cplex.get_y(), cplex.get_obj_value());
+
 		local_branching lb(env, improved, &mod);
 
+		// Call local branching loop
 		bool stopping_criterion = false;
 		bool first = true;
 		while(!stopping_criterion) {
@@ -563,11 +567,6 @@ solution ils::run_w_lb(){
 				improved = lb.get_result();
 				if(best.get_total_cost() > improved.get_total_cost()){
 					best = improved;
-					// k_cur_max = k_min + 1;
-					// k_cur_min = k_min;
-				// } else if(k_cur_max + 1 <= k_max) {
-					// k_cur_max++;
-					// k_cur_min = k_cur_max;
 				} else // Shaking phase
 					stopping_criterion = true;
 			} else

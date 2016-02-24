@@ -38,7 +38,7 @@ public:
 
 	virtual ~solver();
 
-	void run(double, double = +IloInfinity, bool = false);
+	void run(double = MAX_DOUBLE, double = MAX_DOUBLE, bool = false);
 
 	IloNumArray4& get_f() { return f; }
 	IloNumArray3& get_x() { return x; }

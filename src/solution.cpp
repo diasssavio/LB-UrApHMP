@@ -182,6 +182,17 @@ double solution::get_total_hubs_cost(){
 
 double solution::get_total_cost(){ return _cost; }
 
+vector< bool > solution::get_bin_alloc_hubs(){
+	vector< bool > to_return(instance.get_n(), false);
+	set< unsigned >::iterator h = alloc_hubs.begin();
+	for(int k = 0; k < instance.get_n(); k++)
+		if(*h == k){
+			to_return[k] = true;
+			h++;
+		}
+	return to_return;
+}
+
 void solution::generate_hubs_cost(){
 	vector< vector< double > > traffics = instance.get_traffics();
 	vector< vector< double > > distances = instance.get_distances();
