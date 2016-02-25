@@ -32,7 +32,8 @@ void solver::run(double tl, double UB, bool first) {
 	setParam(IloCplex::PreInd, IloFalse);
 	setParam(IloCplex::Param::TimeLimit, tl);
 	setParam(IloCplex::Param::MIP::Tolerances::UpperCutoff, UB);
-	setParam(IloCplex::Param::MIP::Limits::Solutions, first ? 1 : 9223372036800000000);
+	if(first)
+		setParam(IloCplex::Param::MIP::Limits::Solutions, 1);
 	// CPLEX_PARAM_MIPEMPHASIS to feasibility emphasis
 	setParam(IloCplex::Param::Emphasis::MIP, 1);
 
@@ -41,12 +42,12 @@ void solver::run(double tl, double UB, bool first) {
 	solve();
 
 	if(getStatus() == IloAlgorithm::Status::Optimal || getStatus() == IloAlgorithm::Status::Feasible){
-		if(mod1 != NULL) run1(tl, UB, first);
-		else run2(tl, UB, first);
+		if(mod1 != NULL) run1();
+		else run2();
 	}
 }
 
-void solver::run1(double tl, double UB, bool first) {
+void solver::run1() {
 	int n = mod1->instance.get_n();
 
 	// Getting results
@@ -71,7 +72,7 @@ void solver::run1(double tl, double UB, bool first) {
 	obj_value = getObjValue();
 }
 
-void solver::run2(double tl, double UB, bool first) {
+void solver::run2() {
 	int n = mod2->instance.get_n();
 
 	// Getting results

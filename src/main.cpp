@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <iostream>
+#include <fstream>
 #include <vector>
 #include <cstdlib>
 #include <ctime>
@@ -107,8 +108,15 @@ int main(int argc, char* args[]){
 	solution result = ILS.run_w_lb();
 	timer.stop();
 
+	// TODO Save the resulting data in a .csv file
 	printf("TOTAL EXECUTION TIME: %.2lf\n", timer.getStopTime());
 	result.show_data();
+	ofstream _file;
+	_file.open("tests.csv", ios::app);
+	if(_file.is_open()){
+		_file << result.get_total_cost() << "," << timer.getStopTime() << endl;
+		_file.close();
+	}
 
 	return 0;
 }

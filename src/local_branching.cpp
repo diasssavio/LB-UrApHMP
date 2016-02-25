@@ -112,13 +112,35 @@ bool local_branching::run1(double ntl, double UB, int k_max, int k_min, bool fir
 
 	// Run CPLEX on the current model
 	// TODO set the stop at first better solution than a UB
-	solver cplex(mod);
-	cplex.run(ntl, UB, first);
+	IloCplex cplex(*mod);
+	set_cplex(cplex, ntl, UB, first);
+	cplex.solve();
+
+	// solver cplex(mod);
+	// cplex.run(ntl, UB, first);
 
 	// Return the resulting solution
 	bool to_ret = false;
 	if(cplex.getStatus() == IloAlgorithm::Status::Optimal || cplex.getStatus() == IloAlgorithm::Status::Feasible){
-		result = solution(sol.get_instance(), sol.get_p(), sol.get_r(), cplex.get_z(), cplex.get_f(), cplex.get_obj_value());
+		for(IloInt i = 0; i < n; i++){
+			IloNumArray aux1(env);
+			IloNumArray3 aux2(env);
+			for(IloInt j = 0; j < n; j++){
+				aux1.add(cplex.getValue(mod->z[i][j]));
+				IloNumArray2 aux3(env);
+				for(IloInt k = 0; k < n; k++){
+					IloNumArray aux4(env);
+					for(IloInt l = 0; l < n; l++)
+						aux4.add(cplex.getValue(mod->f[i][j][k][l]));
+					aux3.add(aux4);
+				}
+				aux2.add(aux3);
+			}
+			_z.add(aux1);
+			_f.add(aux2);
+		}
+
+		result = solution(sol.get_instance(), sol.get_p(), sol.get_r(), _z, _f, cplex.getObjValue());
 		to_ret = true;
 	}
 	if(cplex.getStatus() == IloAlgorithm::Status::InfeasibleOrUnbounded || cplex.getStatus() == IloAlgorithm::Status::Unknown){
@@ -177,13 +199,40 @@ bool local_branching::run2(double ntl, double UB, int k_max, int k_min, bool fir
 
 	// Run CPLEX on the current model
 	// TODO set the stop at first better solution than a UB
-	solver cplex(mod2);
-	cplex.run(ntl, UB, first);
+	IloCplex cplex(*mod2);
+	set_cplex(cplex, ntl, UB, first);
+	cplex.solve();
+
+	// solver cplex(mod2);
+	// cplex.run(ntl, UB, first);
 
 	// Return the resulting solution
 	bool to_ret = false;
 	if(cplex.getStatus() == IloAlgorithm::Status::Optimal || cplex.getStatus() == IloAlgorithm::Status::Feasible){
-		result = solution(sol.get_instance(), sol.get_p(), sol.get_r(), cplex.get_z(), cplex.get_w(), cplex.get_x(), cplex.get_y(), cplex.get_obj_value());
+		for(IloInt i = 0; i < n; i++){
+			IloNumArray aux1(env);
+			IloNumArray aux2(env);
+			IloNumArray2 aux3(env);
+			IloNumArray2 aux4(env);
+			for(IloInt j = 0; j < n; j++){
+				aux1.add(cplex.getValue(mod2->z[i][j]));
+				aux2.add(cplex.getValue(mod2->w[i][j]));
+				IloNumArray aux5(env);
+				IloNumArray aux6(env);
+				for(IloInt k = 0; k < n; k++){
+					aux5.add(cplex.getValue(mod2->x[i][j][k]));
+					aux6.add(cplex.getValue(mod2->y[i][j][k]));
+				}
+				aux3.add(aux5);
+				aux4.add(aux6);
+			}
+			_z.add(aux1);
+			_w.add(aux2);
+			_x.add(aux3);
+			_y.add(aux4);
+		}
+
+		result = solution(sol.get_instance(), sol.get_p(), sol.get_r(), _z, _w, _x, _y, cplex.getObjValue());
 		to_ret = true;
 	}
 	if(cplex.getStatus() == IloAlgorithm::Status::InfeasibleOrUnbounded || cplex.getStatus() == IloAlgorithm::Status::Unknown){
@@ -197,4 +246,17 @@ bool local_branching::run2(double ntl, double UB, int k_max, int k_min, bool fir
 		mod2->remove(lbc_min);
 
 	return to_ret;
+}
+
+void local_branching::set_cplex( IloCplex& cplex, double ntl, double UB, bool first ) {
+	cplex.setParam(IloCplex::Threads, 1);
+	cplex.setParam(IloCplex::Param::Preprocessing::Aggregator, 0);
+	cplex.setParam(IloCplex::Param::Preprocessing::Presolve, 0);
+	cplex.setParam(IloCplex::PreInd, IloFalse);
+	cplex.setParam(IloCplex::Param::TimeLimit, ntl);
+	cplex.setParam(IloCplex::Param::MIP::Tolerances::UpperCutoff, UB);
+	if(first)
+		cplex.setParam(IloCplex::Param::MIP::Limits::Solutions, 1);
+	cplex.setParam(IloCplex::Param::Emphasis::MIP, 1);
+	// cplex.exportModel("test.lp");
 }

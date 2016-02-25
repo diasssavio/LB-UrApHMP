@@ -541,7 +541,7 @@ solution ils::run_w_lb(){
 	try {
 		// TODO Try initial reference sol with ILS, constructor heuristic & CPLEX first feasible
 		// NOTE CPLEX first feasible solution is too much time consuming
-		solution initial = execute();
+		solution initial = constructor();
 		solution improved = initial;
 		// model mod(env, instance, initial);
 		// solution initial(instance, p, r);

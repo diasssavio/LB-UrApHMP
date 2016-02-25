@@ -108,6 +108,8 @@ $(TMP_ILS)/mt19937ar.o: $(SRC)/mt19937ar.c $(INCLUDE)/mt19937ar.h
 # EXACT
 $(TMP_ILS)/model.o: $(SRC)/model.cpp $(INCLUDE)/model.h
 	$(CCC) -c $(CCFLAGS) $(SRC)/model.cpp -o $(TMP_ILS)/model.o
+$(TMP_ILS)/model2.o: $(SRC)/model2.cpp $(INCLUDE)/model2.h
+	$(CCC) -c $(CCFLAGS) $(SRC)/model2.cpp -o $(TMP_ILS)/model2.o
 $(TMP_ILS)/solver.o: $(SRC)/solver.cpp $(INCLUDE)/solver.h
 	$(CCC) -c $(CCFLAGS) $(SRC)/solver.cpp -o $(TMP_ILS)/solver.o
 
@@ -137,8 +139,8 @@ $(TMP_ILS)/Structure.o: $(TMP_ILS)/solution.o $(TMP_ILS)/FWChrono.o $(TMP_ILS)/m
 	gcc -Wl,-r $(TMP_ILS)/solution.o $(TMP_ILS)/FWChrono.o $(TMP_ILS)/mt19937ar.o -o $(TMP_ILS)/Structure.o -nostdlib
 
 # EXACT
-$(TMP_ILS)/Exact.o: $(TMP_ILS)/model.o $(TMP_ILS)/solver.o
-	gcc -Wl,-r $(TMP_ILS)/model.o $(TMP_ILS)/solver.o -o $(TMP_ILS)/Exact.o -nostdlib
+$(TMP_ILS)/Exact.o: $(TMP_ILS)/model.o $(TMP_ILS)/model2.o $(TMP_ILS)/solver.o
+	gcc -Wl,-r $(TMP_ILS)/model.o $(TMP_ILS)/model2.o $(TMP_ILS)/solver.o -o $(TMP_ILS)/Exact.o -nostdlib
 
 # BOOST
 # $(TMP_ILS)/Drawer.o: $(TMP_ILS)/draw_graph.o

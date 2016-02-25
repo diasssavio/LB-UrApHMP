@@ -32,6 +32,8 @@ private:
 	bool run1( double, double, int = 1, int = 0, bool = false );
 	bool run2( double, double, int = 1, int = 0, bool = false );
 
+	void set_cplex( IloCplex&, double, double, bool );
+
 public:
 	local_branching( IloEnv&, solution&, model* );
 

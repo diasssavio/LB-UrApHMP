@@ -29,8 +29,8 @@ private:
 
 	double obj_value;
 
-	void run1(double tl, double UB, bool);
-	void run2(double tl, double UB, bool);
+	void run1();
+	void run2();
 
 public:
 	solver(model*);
