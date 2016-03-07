@@ -125,9 +125,13 @@ void model::add_const(){
 				c7.setName(c7_name.str().c_str());
 				add(c7);
 			}
+}
 
+void model::add_fixed_const( vector< bool >& alloc_hubs ){
 	// Defining values of z[k][k] & z[i][k] based on alloc_hubs from solution
-	/*vector< bool > alloc_hubs = sol.get_bin_alloc_hubs();
+	int n = instance.get_n();
+	
+	// vector< bool > alloc_hubs = sol.get_bin_alloc_hubs();
 	for(IloInt k = 0; k < n; k++){
 		IloConstraint c8;
 		if(alloc_hubs[k])
@@ -173,7 +177,7 @@ void model::add_const(){
 							c10_name << "Cons_10(" << i << ")" << "(" << j << ")" << "(" << k << ")" << "(" << l << ")";
 							c10.setName(c10_name.str().c_str());
 							add(c10);
-						}*/
+						}
 }
 
 void model::add_obj(){

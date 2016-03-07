@@ -25,6 +25,9 @@ public:
 	model(IloEnv, uraphmp&, solution&);
 	virtual ~model();
 
+	// Add constraints for fixing variables
+	void add_fixed_const(vector< bool >&);
+
 	// Instance & Solution
 	uraphmp& instance;
 	solution& sol;

@@ -34,6 +34,9 @@ private:
 
 	void set_cplex( IloCplex&, double, double, bool );
 
+	void extract_model1( IloCplex& );
+	void extract_model2( IloCplex& );
+
 public:
 	local_branching( IloEnv&, solution&, model* );
 

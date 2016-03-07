@@ -543,14 +543,15 @@ solution ils::run_w_lb(){
 		// NOTE CPLEX first feasible solution is too much time consuming
 		solution initial = constructor();
 		solution improved = initial;
-		// model mod(env, instance, initial);
 		// solution initial(instance, p, r);
-		model2 mod(env, instance, initial);
+		// model mod(env, instance, initial);
+		model2 mod2(env, instance, initial);
 		// solver cplex(&mod);
 		// cplex.run(MAX_DOUBLE, MAX_DOUBLE, true);
 		// solution improved(instance, p, r, cplex.get_z(), cplex.get_w(), cplex.get_x(), cplex.get_y(), cplex.get_obj_value());
 
-		local_branching lb(env, improved, &mod);
+		local_branching lb(env, improved, &mod2);
+		// local_branching lb(env, improved, &mod);
 
 		// Call local branching loop
 		bool stopping_criterion = false;

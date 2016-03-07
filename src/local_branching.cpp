@@ -10,6 +10,9 @@
  */
 local_branching::local_branching(IloEnv& _env, solution& _sol, model* _mod) : env(_env), sol(_sol), mod(_mod) {
 	_z = IloNumArray2(env);
+	_w = IloNumArray2(env);
+	_x = IloNumArray3(env);
+	_y = IloNumArray3(env);
 	_f = IloNumArray4(env);
 	mod2 = NULL;
 }
@@ -27,6 +30,7 @@ local_branching::local_branching(IloEnv& _env, solution& _sol, model2* _mod) : e
 	_w = IloNumArray2(env);
 	_x = IloNumArray3(env);
 	_y = IloNumArray3(env);
+	_f = IloNumArray4(env);
 	mod = NULL;
 }
 
@@ -62,7 +66,6 @@ const solution& local_branching::get_result() const { return this->result; }
  * @param k_min Minimum rhs of LBC expressions
  * @return true if found a feasible solution, false otherwise
  */
-// bool local_branching::run(double ntl, unsigned k_max = 1, unsigned k_min = 0) {
 bool local_branching::run(double ntl, double UB, int k_max, int k_min, bool first) {
 	if(mod != NULL) return run1(ntl, UB, k_max, k_min, first);
 	return run2(ntl, UB, k_max, k_min, first);
@@ -79,7 +82,6 @@ bool local_branching::run(double ntl, double UB, int k_max, int k_min, bool firs
  * @param first Stop at first better than UB solution or not
  * @return true if found a feasible solution, false otherwise
  */
-// bool run(double ntl, double UB, unsigned k_max = 1, unsigned k_min = 0, bool first = false) {
 bool local_branching::run1(double ntl, double UB, int k_max, int k_min, bool first) {
 	int n = sol.get_instance().get_n();
 	set< unsigned > alloc_hubs = sol.get_alloc_hubs();
@@ -122,24 +124,7 @@ bool local_branching::run1(double ntl, double UB, int k_max, int k_min, bool fir
 	// Return the resulting solution
 	bool to_ret = false;
 	if(cplex.getStatus() == IloAlgorithm::Status::Optimal || cplex.getStatus() == IloAlgorithm::Status::Feasible){
-		for(IloInt i = 0; i < n; i++){
-			IloNumArray aux1(env);
-			IloNumArray3 aux2(env);
-			for(IloInt j = 0; j < n; j++){
-				aux1.add(cplex.getValue(mod->z[i][j]));
-				IloNumArray2 aux3(env);
-				for(IloInt k = 0; k < n; k++){
-					IloNumArray aux4(env);
-					for(IloInt l = 0; l < n; l++)
-						aux4.add(cplex.getValue(mod->f[i][j][k][l]));
-					aux3.add(aux4);
-				}
-				aux2.add(aux3);
-			}
-			_z.add(aux1);
-			_f.add(aux2);
-		}
-
+		extract_model1(cplex);
 		result = solution(sol.get_instance(), sol.get_p(), sol.get_r(), _z, _f, cplex.getObjValue());
 		to_ret = true;
 	}
@@ -154,6 +139,33 @@ bool local_branching::run1(double ntl, double UB, int k_max, int k_min, bool fir
 		mod->remove(lbc_min);
 
 	return to_ret;
+}
+
+/**
+ * @brief Extracting variables from model 1 after solving
+ * @details [long description]
+ * 
+ * @param cplex IloCplex solver for model 1
+ */
+void local_branching::extract_model1(IloCplex& cplex){
+	int n = sol.get_instance().get_n();
+	for(IloInt i = 0; i < n; i++){
+		IloNumArray aux1(env);
+		IloNumArray3 aux2(env);
+		for(IloInt j = 0; j < n; j++){
+			aux1.add(cplex.getValue(mod->z[i][j]));
+			IloNumArray2 aux3(env);
+			for(IloInt k = 0; k < n; k++){
+				IloNumArray aux4(env);
+				for(IloInt l = 0; l < n; l++)
+					aux4.add(cplex.getValue(mod->f[i][j][k][l]));
+				aux3.add(aux4);
+			}
+			aux2.add(aux3);
+		}
+		_z.add(aux1);
+		_f.add(aux2);
+	}
 }
 
 /**
@@ -209,30 +221,31 @@ bool local_branching::run2(double ntl, double UB, int k_max, int k_min, bool fir
 	// Return the resulting solution
 	bool to_ret = false;
 	if(cplex.getStatus() == IloAlgorithm::Status::Optimal || cplex.getStatus() == IloAlgorithm::Status::Feasible){
-		for(IloInt i = 0; i < n; i++){
-			IloNumArray aux1(env);
-			IloNumArray aux2(env);
-			IloNumArray2 aux3(env);
-			IloNumArray2 aux4(env);
-			for(IloInt j = 0; j < n; j++){
-				aux1.add(cplex.getValue(mod2->z[i][j]));
-				aux2.add(cplex.getValue(mod2->w[i][j]));
-				IloNumArray aux5(env);
-				IloNumArray aux6(env);
-				for(IloInt k = 0; k < n; k++){
-					aux5.add(cplex.getValue(mod2->x[i][j][k]));
-					aux6.add(cplex.getValue(mod2->y[i][j][k]));
-				}
-				aux3.add(aux5);
-				aux4.add(aux6);
+		extract_model2(cplex);
+		result = solution(sol.get_instance(), sol.get_p(), sol.get_r(), _z, _w, _x, _y, cplex.getObjValue());
+
+		// Refining solution from model 2 using model 1 w/ fixed variables
+		if((cplex.getStatus() == IloAlgorithm::Status::Feasible) && (result.get_total_cost() < UB)){
+			mod = new model(env, result.get_instance(), result);
+			vector< bool > bin_alloc_hubs = result.get_bin_alloc_hubs();
+			mod->add_fixed_const(bin_alloc_hubs);
+
+			cplex.clear();
+			cplex.extract(*mod);
+			set_cplex(cplex, ntl, result.get_total_cost(), false);
+			cplex.solve();
+
+			if(cplex.getStatus() == IloAlgorithm::Status::Optimal || cplex.getStatus() == IloAlgorithm::Status::Feasible){
+				cout << "the thing is going on" << endl;
+				extract_model1(cplex);
+				cout << "it\'s good so far!" << endl;
+				result = solution(sol.get_instance(), sol.get_p(), sol.get_r(), _z, _f, cplex.getObjValue());
+				cout << "it worked!" << endl;
 			}
-			_z.add(aux1);
-			_w.add(aux2);
-			_x.add(aux3);
-			_y.add(aux4);
+
+			mod = NULL;
 		}
 
-		result = solution(sol.get_instance(), sol.get_p(), sol.get_r(), _z, _w, _x, _y, cplex.getObjValue());
 		to_ret = true;
 	}
 	if(cplex.getStatus() == IloAlgorithm::Status::InfeasibleOrUnbounded || cplex.getStatus() == IloAlgorithm::Status::Unknown){
@@ -246,6 +259,38 @@ bool local_branching::run2(double ntl, double UB, int k_max, int k_min, bool fir
 		mod2->remove(lbc_min);
 
 	return to_ret;
+}
+
+/**
+ * @brief Extracting variables from model 2 after solving
+ * @details [long description]
+ * 
+ * @param cplex IloCplex solver for model 2
+ */
+void local_branching::extract_model2(IloCplex& cplex){
+	int n = sol.get_instance().get_n();
+	for(IloInt i = 0; i < n; i++){
+		IloNumArray aux1(env);
+		IloNumArray aux2(env);
+		IloNumArray2 aux3(env);
+		IloNumArray2 aux4(env);
+		for(IloInt j = 0; j < n; j++){
+			aux1.add(cplex.getValue(mod2->z[i][j]));
+			aux2.add(cplex.getValue(mod2->w[i][j]));
+			IloNumArray aux5(env);
+			IloNumArray aux6(env);
+			for(IloInt k = 0; k < n; k++){
+				aux5.add(cplex.getValue(mod2->x[i][j][k]));
+				aux6.add(cplex.getValue(mod2->y[i][j][k]));
+			}
+			aux3.add(aux5);
+			aux4.add(aux6);
+		}
+		_z.add(aux1);
+		_w.add(aux2);
+		_x.add(aux3);
+		_y.add(aux4);
+	}
 }
 
 void local_branching::set_cplex( IloCplex& cplex, double ntl, double UB, bool first ) {
