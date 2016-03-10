@@ -11,6 +11,7 @@ model::model(IloEnv _env, uraphmp& _instance, solution& _sol) : IloModel(_env), 
 	init();
 	add_obj();
 	add_const();
+	fixed_consts = IloArray<IloConstraint*>(getEnv());
 }
 
 model::~model() { }
@@ -130,7 +131,7 @@ void model::add_const(){
 void model::add_fixed_const( vector< bool >& alloc_hubs ){
 	// Defining values of z[k][k] & z[i][k] based on alloc_hubs from solution
 	int n = instance.get_n();
-	
+
 	// vector< bool > alloc_hubs = sol.get_bin_alloc_hubs();
 	for(IloInt k = 0; k < n; k++){
 		IloConstraint c8;
@@ -142,6 +143,7 @@ void model::add_fixed_const( vector< bool >& alloc_hubs ){
 		c8_name << "Cons_8(" << k << ")";
 		c8.setName(c8_name.str().c_str());
 		add(c8);
+		fixed_consts.add(&c8);
 	}
 	for(IloInt k = 0; k < n; k++)
 		if(!alloc_hubs[k])
@@ -151,6 +153,7 @@ void model::add_fixed_const( vector< bool >& alloc_hubs ){
 				c8_name << "Cons_8(" << i << ")(" << k << ")";
 				c8.setName(c8_name.str().c_str());
 				add(c8);
+				fixed_consts.add(&c8);
 			}
 
 	// Defining values of f[i][j][k][l] where z[k][k] == 0.0 or z[l][l] == 0.0
@@ -164,6 +167,7 @@ void model::add_fixed_const( vector< bool >& alloc_hubs ){
 						c9_name << "Cons_9(" << i << ")(" << j << ")(" << k << ")(" << l << ")";
 						c9.setName(c9_name.str().c_str());
 						add(c9);
+						fixed_consts.add(&c9);
 					}
 				}
 	for(IloInt i = 0; i < n; i++)
@@ -177,7 +181,16 @@ void model::add_fixed_const( vector< bool >& alloc_hubs ){
 							c10_name << "Cons_10(" << i << ")" << "(" << j << ")" << "(" << k << ")" << "(" << l << ")";
 							c10.setName(c10_name.str().c_str());
 							add(c10);
+							fixed_consts.add(&c10);
 						}
+}
+
+void model::remove_fixed_const(){
+	cout << fixed_consts.getSize() << endl;
+	for(IloInt i = 0; i < fixed_consts.getSize(); i++){
+		remove(*fixed_consts[i]);
+		cout << "removed: " << i << endl;
+	}
 }
 
 void model::add_obj(){

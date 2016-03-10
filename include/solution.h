@@ -89,6 +89,7 @@ public:
 	static bool my_sol_comparison( solution, solution );
 	void show_data();
 	bool is_hub( unsigned );
+	bool is_assigned( unsigned, unsigned );
 
 	void assign_hubs();
 	void assign_partial_hubs( int, int, int );

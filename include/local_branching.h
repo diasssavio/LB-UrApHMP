@@ -30,7 +30,9 @@ private:
 	solution result;
 
 	bool run1( double, double, int = 1, int = 0, bool = false );
+	bool run1( double, double, int = 1, int = 0, int = 1, bool = false );
 	bool run2( double, double, int = 1, int = 0, bool = false );
+	bool run2( double, double, int = 1, int = 0, int = 1, bool = false );
 
 	void set_cplex( IloCplex&, double, double, bool );
 
@@ -49,6 +51,7 @@ public:
 	const solution& get_result() const;
 
 	bool run( double, double, int = 1, int = 0, bool = false );
+	bool run( double, double, int = 1, int = 0, int = 1, bool = false );
 };
 
 #endif /* LOCAL_BRANCHING_H_ */

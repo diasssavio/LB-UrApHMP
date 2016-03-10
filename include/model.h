@@ -17,6 +17,8 @@
 
 class model: public IloModel {
 private:
+	IloArray<IloConstraint*> fixed_consts;
+
 	void init(); // Initialize all variables for problem
 	void add_const(); // Add constraints to model
 	void add_obj(); // Add objective function to model
@@ -27,6 +29,9 @@ public:
 
 	// Add constraints for fixing variables
 	void add_fixed_const(vector< bool >&);
+
+	// Remove constraints for fixing variables
+	void remove_fixed_const();
 
 	// Instance & Solution
 	uraphmp& instance;

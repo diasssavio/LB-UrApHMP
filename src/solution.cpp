@@ -46,8 +46,7 @@ solution::solution( uraphmp& instance, int p_cons, int r_cons, IloNumArray2& _z,
 			if(_z[i][j] == 0.0) continue;
 			if((i == j))
 				_alloc_hubs.insert(i);
-			else
-				aux.push_back(j);
+			aux.push_back(j);
 		}
 		_assigned_hubs.push_back(aux);
 	}
@@ -79,11 +78,17 @@ solution::solution( uraphmp& instance, int p_cons, int r_cons, IloNumArray2& _z,
 	this->set_instance(instance);
 	
 	int n = this->instance.get_n();
+	vector< vector< double > > traffics = instance.get_traffics();
+	vector< vector< double > > distances = instance.get_distances();
+	double X = instance.get_collection_rate();
+	double alpha = instance.get_transfer_rate();
+	double delta = instance.get_distribution_rate();
 
 	set< unsigned > _alloc_hubs;
 	vector< vector< unsigned > > _assigned_hubs;
 	vector< vector< unsigned > > _f_chosen;
 	vector< vector< unsigned > > _s_chosen;
+	vector< vector< double > > temp_cost;
 
 	// Translating _z to alloc_hubs and assigned_hubs
 	for(unsigned i = 0; i < n; i++){
@@ -92,29 +97,46 @@ solution::solution( uraphmp& instance, int p_cons, int r_cons, IloNumArray2& _z,
 			if(_z[i][j] == 0.0) continue;
 			if((i == j))
 				_alloc_hubs.insert(i);
-			else
-				aux.push_back(j);
+			aux.push_back(j);
 		}
 		_assigned_hubs.push_back(aux);
 	}
 
 	// Translating _x _y to _f_chosen and _s_chosen
 	for(unsigned i = 0; i < n; i++){
-		vector< unsigned > aux1;
-		vector< unsigned > aux2;
-		for(unsigned j = 0; j < n; j++)
-			for(unsigned k = 0; k < n; k++)
-				if(_w[i][k] > 0.0)
-					for(unsigned l = 0; l < n; l++){
-						if(l == k) continue;
-						if((_y[i][k][l] > 0.0) && (_x[i][l][j] > 0.0)){
-							aux1.push_back(k);
-							aux2.push_back(l);
-						}
+		vector< unsigned > aux1(n);
+		vector< unsigned > aux2(n);
+		for(unsigned k = 0; k < n; k++)
+				if(_w[i][k] != 0.0)
+					for(unsigned j = 0; j < n; j++){
+						if((i == j) && (traffics[i][j] == 0.0))
+							aux1[j] = aux2[j] = k;
+						else
+							for(unsigned l = 0; l < n; l++){
+								if((l == k) && (_x[i][l][j] != 0.0))
+									aux1[j] = aux2[j] = k;
+								else if((_y[i][k][l] != 0.0) && (_x[i][l][j] != 0.0)){
+									aux1[j] = k;
+									aux2[j] = l;
+								}
+							}
 					}
 		_f_chosen.push_back(aux1);
 		_s_chosen.push_back(aux2);
 	}
+
+	// Getting the costs of each route i->H(1)ij->H(2)ij->j
+	/*for(unsigned i = 0; i < n; i++){
+		vector< double > aux(n);
+		for(unsigned j = 0; j < n; j++){
+			aux[j] = traffics[i][j] * ((X * distances[i][_f_chosen[i][j]]) +
+							(alpha * distances[_f_chosen[i][j]][_s_chosen[i][j]]) +
+							(delta * distances[_s_chosen[i][j]][j]));
+		}
+		temp_cost.push_back(aux);
+	}
+	set_cost(temp_cost);
+	*/
 
 	// Setting the instance variables
 	set_alloc_hubs(_alloc_hubs);
@@ -231,7 +253,7 @@ void solution::show_data(){
 
 	/*printf("\n\nAssigned Hubs:\n");
 	for(int i = 0; i < instance.get_n(); i++){
-		if(is_hub(i)) continue;
+		// if(is_hub(i)) continue;
 		printf("H[%d]: ", i);
 		for(int j = 0; j < r; j++)
 			printf("%d\t", assigned_hubs[i][j]);
@@ -240,10 +262,10 @@ void solution::show_data(){
 
 	printf("\n\nTraffics Routes:\n");
 	for(int i = 0; i < instance.get_n(); i++){
-		if(is_hub(i)) continue;
+		// if(is_hub(i)) continue;
 		printf("i[%d]: ", i);
 		for(int j = 0; j < instance.get_n(); j++){
-			if(is_hub(j)) continue;
+			// if(is_hub(j)) continue;
 			printf("%.2lf\t", cost[i][j]);
 		}
 		printf("\n");
@@ -251,24 +273,24 @@ void solution::show_data(){
 
 	printf("\n\nH1:\n");
 	for(int i = 0; i < instance.get_n(); i++){
-		if(is_hub(i)) continue;
+		// if(is_hub(i)) continue;
 		printf("i[%d]: ", i);
 		for(int j = 0; j < instance.get_n(); j++){
-			if(is_hub(j)) continue;
+			// if(is_hub(j)) continue;
 			printf("%d\t", f_chosen[i][j]);
 		}
 		printf("\n");
 	}
 	printf("\n\nH2:\n");
 	for(int i = 0; i < instance.get_n(); i++){
-		if(is_hub(i)) continue;
+		// if(is_hub(i)) continue;
 		printf("i[%d]: ", i);
 		for(int j = 0; j < instance.get_n(); j++){
-			if(is_hub(j)) continue;
+			// if(is_hub(j)) continue;
 			printf("%d\t", s_chosen[i][j]);
 		}
 		printf("\n");
-	}*/
+	}
 
 	/*printf("\n\nHUBS COST:\t");
 	for(int i = 0; i < p; i++)
@@ -278,6 +300,8 @@ void solution::show_data(){
 }
 
 bool solution::is_hub( unsigned index ){ return (alloc_hubs.find(index) != alloc_hubs.end()); }
+
+bool solution::is_assigned( unsigned index, unsigned hub ){ return (find(assigned_hubs[index].begin(), assigned_hubs[index].end(), hub) != assigned_hubs[index].end()); }
 
 bool solution::my_comparison( pair< double, int > p1, pair< double, int > p2 ){ return (p1.first < p2.first); }
 

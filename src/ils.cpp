@@ -400,7 +400,7 @@ solution& ils::neighborhood_a( solution& p_sol ){
 				s1.set_s_chosen(p_sol.get_s_chosen());
 				s1.route_partial_traffics(i);
 				neighbors.push_back(s1);
-				if(s1.get_cost() < p_sol.get_cost()){
+				if(s1.get_total_cost() < p_sol.get_total_cost()){
 					set_na(neighbors);
 					return na[ na.size() - 1 ];
 				}
@@ -422,7 +422,7 @@ void ils::_ils(){
 	bool first = true;
 	while(i < max_iterations){
 		// Local Search
-//		improved = local_search_c2n1(improved);
+		// improved = local_search_c2n1(improved);
 		improved = local_search_rn1(improved);
 
 		// TODO 3.Evaluation of more than just one solution in the local search
@@ -533,6 +533,7 @@ solution ils::run_w_lb(){
 	// Execution parameters
 	int k_min = 0;
 	int k_max = 1;
+	int k2 = instance.get_n()/2;
 	double ntl = 120;
 
 	// Initializing CPLEX Environment
@@ -544,8 +545,10 @@ solution ils::run_w_lb(){
 		solution initial = constructor();
 		solution improved = initial;
 		// solution initial(instance, p, r);
+
 		// model mod(env, instance, initial);
 		model2 mod2(env, instance, initial);
+
 		// solver cplex(&mod);
 		// cplex.run(MAX_DOUBLE, MAX_DOUBLE, true);
 		// solution improved(instance, p, r, cplex.get_z(), cplex.get_w(), cplex.get_x(), cplex.get_y(), cplex.get_obj_value());
@@ -564,7 +567,7 @@ solution ils::run_w_lb(){
 
 			best.show_data();
 
-			if(lb.run(ntl, improved.get_total_cost(), k_max, k_min, true)){
+			if(lb.run(ntl, improved.get_total_cost(), k_max, k_min, k2, true)){
 				improved = lb.get_result();
 				if(best.get_total_cost() > improved.get_total_cost()){
 					best = improved;
